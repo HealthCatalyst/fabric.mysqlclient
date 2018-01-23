@@ -28,14 +28,14 @@ if [[ -v DOBACKUP ]]; then
         exit 1
     fi    
 
-    today=`date '+%Y_%m_%d__%H_%M_%S'`;
+    today=`date '+%Y_%m_%d_%H_%M_%S'`;
     # MYSQL_USER
     # $MYSQL_PASSWORD
-    BACKUP_FILE= "/var/lib/mysql/${BACKUP_NAME_PREFIX}-${today}.sql"
+    BACKUP_FILE= "/var/lib/mysql/${BACKUP_NAME_PREFIX}_${today}.sql"
     # $MYSQL_DATABASE
 
     echo "Backing up to $BACKUP_FILE"
-    mysqldump -h $MYSQL_SERVER -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" $MYSQL_DATABASE > $BACKUP_FILE
+    mysqldump -h $MYSQL_SERVER -u "$MYSQL_USER" -p"$MYSQL_PASSWORD"  $MYSQL_DATABASE > "$BACKUP_FILE"
 else
 
     if [[ ! -v BACKUP_NAME ]]; then
@@ -65,5 +65,5 @@ else
     
     echo "restoring from $BACKUP_FILE"
 
-    mysql -h $MYSQL_SERVER -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" $MYSQL_DATABASE < $BACKUP_FILE
+    mysql -h $MYSQL_SERVER -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" $MYSQL_DATABASE < "$BACKUP_FILE"
 fi
