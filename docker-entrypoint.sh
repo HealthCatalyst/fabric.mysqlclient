@@ -10,7 +10,7 @@ fi
 echo "Connecting to $MYSQL_SERVER:3306"
 wait-for-it $MYSQL_SERVER:3306 -t 300 -- echo "mysql is up"
 
-if [[ ! -v DOBACKUP ]]; then
+if [[ -v DOBACKUP ]]; then
     if [[ ! -v BACKUP_NAME_PREFIX ]]; then
         echo 'BACKUP_NAME_PREFIX was not set'
         exit 1
