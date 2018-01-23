@@ -8,6 +8,10 @@ ADD mariadb.repo /etc/yum.repos.d/
 
 RUN yum -y install MariaDB-client; yum clean all
 
+ADD docker-entrypoint.sh ./docker-entrypoint.sh
+
+RUN dos2unix ./docker-entrypoint.sh &>/dev/null \
+	&& chmod a+x ./docker-entrypoint.sh
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
