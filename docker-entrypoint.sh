@@ -1,6 +1,11 @@
 #!/bin/sh
 
-echo 'starting docker-entrypoint.sh'
+echo "starting docker-entrypoint.sh with argument: $1"
+
+if [[ $1 == "shell" ]]; then
+    bash
+    exit 0
+fi
 
 if [[ ! -v MYSQL_SERVER ]]; then
     echo 'MYSQL_SERVER was not set'

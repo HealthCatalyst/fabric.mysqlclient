@@ -14,4 +14,4 @@ RUN dos2unix ./docker-entrypoint.sh &>/dev/null \
 	&& chmod a+x ./docker-entrypoint.sh
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
-
+CMD ["shell"]
