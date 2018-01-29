@@ -47,6 +47,25 @@ if [[ $1 == "backup" ]]; then
     echo "Backing up to $BACKUP_FILE"
     mysqldump -h $MYSQL_SERVER -u "$MYSQL_USER" -p"$MYSQL_PASSWORD"  $MYSQL_DATABASE > "$BACKUP_FILE"
     echo "Finished backing up to $BACKUP_FILE"
+ 
+elif [[ $1 == "backupall" ]]; then
+    echo "backupall command received"
+    if [[ ! -v BACKUP_NAME_PREFIX ]]; then
+        echo 'BACKUP_NAME_PREFIX was not set'
+        exit 1
+    fi    
+
+    # bash date formats: https://zxq9.com/archives/795
+    today=`date '+%Y%m%d_%H%M%S'`;
+    # MYSQL_USER
+    # $MYSQL_PASSWORD
+    BACKUP_FILE="/var/lib/mysql/${BACKUP_NAME_PREFIX}_${today}.sql"
+    # $MYSQL_DATABASE
+
+    echo "Backing up all databases to $BACKUP_FILE"
+    mysqldump -h $MYSQL_SERVER -u "root" -p"$MYSQL_ROOT_PASSWORD" --all-databases > "$BACKUP_FILE"
+    echo "Finished backing up all databases to $BACKUP_FILE"
+
 elif [[ $1 == "restore" ]]; then
 
     echo "restore command received"
