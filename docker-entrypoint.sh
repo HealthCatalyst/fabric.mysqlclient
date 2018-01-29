@@ -3,7 +3,7 @@
 echo "starting docker-entrypoint.sh with argument: $1"
 
 if [[ $1 == "shell" ]]; then
-    bash
+    exec bash
     exit 0
 fi
 
