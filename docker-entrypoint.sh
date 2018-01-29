@@ -2,8 +2,9 @@
 
 echo "starting docker-entrypoint.sh with argument: $1"
 
-if [[ $1 == "shell" ]]; then
-    exec bash
+if [[ $1 == "sleep" ]]; then
+    echo "sleeping forever"
+    tail -f /dev/null
     exit 0
 fi
 
@@ -11,52 +12,49 @@ if [[ ! -v MYSQL_SERVER ]]; then
     echo 'MYSQL_SERVER was not set'
     exit 1
 fi 
+if [[ ! -v MYSQL_USER ]]; then
+    echo 'MYSQL_USER was not set'
+    exit 1
+fi    
+if [[ ! -v MYSQL_PASSWORD ]]; then
+    echo 'MYSQL_PASSWORD was not set'
+    exit 1
+fi    
+if [[ ! -v MYSQL_DATABASE ]]; then
+    echo 'MYSQL_DATABASE was not set'
+    exit 1
+fi    
 
 echo "Connecting to $MYSQL_SERVER:3306"
 wait-for-it $MYSQL_SERVER:3306 -t 300 -- echo "mysql is up"
 
-if [[ -v DOBACKUP ]]; then
+if [[ $1 == "backup" ]]; then
+    echo "backup command received"
     if [[ ! -v BACKUP_NAME_PREFIX ]]; then
         echo 'BACKUP_NAME_PREFIX was not set'
         exit 1
     fi    
-    if [[ ! -v MYSQL_USER ]]; then
-        echo 'MYSQL_USER was not set'
-        exit 1
-    fi    
-    if [[ ! -v MYSQL_PASSWORD ]]; then
-        echo 'MYSQL_PASSWORD was not set'
-        exit 1
-    fi    
-    if [[ ! -v MYSQL_DATABASE ]]; then
-        echo 'MYSQL_DATABASE was not set'
-        exit 1
-    fi    
 
-    today=`date '+%Y_%m_%d_%H_%M_%S'`;
+    # bash date formats: https://zxq9.com/archives/795
+    today=`date '+%Y%m%d_%H%M%S'`;
     # MYSQL_USER
     # $MYSQL_PASSWORD
-    BACKUP_FILE= "/var/lib/mysql/${BACKUP_NAME_PREFIX}_${today}.sql"
+    BACKUP_FILE="/var/lib/mysql/${BACKUP_NAME_PREFIX}_${today}.sql"
     # $MYSQL_DATABASE
 
     echo "Backing up to $BACKUP_FILE"
     mysqldump -h $MYSQL_SERVER -u "$MYSQL_USER" -p"$MYSQL_PASSWORD"  $MYSQL_DATABASE > "$BACKUP_FILE"
-else
+    echo "Finished backing up to $BACKUP_FILE"
+else if [[ $1 == "restore" ]]; then
 
+    echo "restore command received"
+    
     if [[ ! -v BACKUP_NAME ]]; then
         echo 'BACKUP_NAME was not set'
         exit 1
     fi    
-    if [[ ! -v MYSQL_USER ]]; then
-        echo 'MYSQL_USER was not set'
-        exit 1
-    fi    
-    if [[ ! -v MYSQL_PASSWORD ]]; then
-        echo 'MYSQL_PASSWORD was not set'
-        exit 1
-    fi    
-    if [[ ! -v MYSQL_DATABASE ]]; then
-        echo 'MYSQL_DATABASE was not set'
+    if [[ ! -v MYSQL_ROOT_PASSWORD ]]; then
+        echo 'MYSQL_ROOT_PASSWORD was not set'
         exit 1
     fi    
 
@@ -70,5 +68,10 @@ else
     
     echo "restoring from $BACKUP_FILE"
 
-    mysql -h $MYSQL_SERVER -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" $MYSQL_DATABASE < "$BACKUP_FILE"
+    # restoring requires root privileges
+    mysql -h $MYSQL_SERVER -u "root" -p"$MYSQL_ROOT_PASSWORD" $MYSQL_DATABASE < "$BACKUP_FILE"
+
+    echo "Finished restoring from $BACKUP_FILE"    
+else
+    echo "No command was passed in.  Use the args property in kubernetes to pass in a command (sleep, backup or restore)"
 fi
