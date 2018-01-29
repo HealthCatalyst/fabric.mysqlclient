@@ -28,6 +28,8 @@ fi
 echo "Connecting to $MYSQL_SERVER:3306"
 wait-for-it $MYSQL_SERVER:3306 -t 300 -- echo "mysql is up"
 
+# bash if statement syntax: https://ryanstutorials.net/bash-scripting-tutorial/bash-if-statements.php
+
 if [[ $1 == "backup" ]]; then
     echo "backup command received"
     if [[ ! -v BACKUP_NAME_PREFIX ]]; then
@@ -45,10 +47,10 @@ if [[ $1 == "backup" ]]; then
     echo "Backing up to $BACKUP_FILE"
     mysqldump -h $MYSQL_SERVER -u "$MYSQL_USER" -p"$MYSQL_PASSWORD"  $MYSQL_DATABASE > "$BACKUP_FILE"
     echo "Finished backing up to $BACKUP_FILE"
-else if [[ $1 == "restore" ]]; then
+elif [[ $1 == "restore" ]]; then
 
     echo "restore command received"
-    
+
     if [[ ! -v BACKUP_NAME ]]; then
         echo 'BACKUP_NAME was not set'
         exit 1
