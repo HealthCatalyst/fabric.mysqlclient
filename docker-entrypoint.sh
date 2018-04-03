@@ -93,6 +93,33 @@ elif [[ $1 == "restore" ]]; then
     mysql -h $MYSQL_SERVER -u "root" -p"$MYSQL_ROOT_PASSWORD" $MYSQL_DATABASE < "$BACKUP_FILE"
 
     echo "Finished restoring from $BACKUP_FILE"    
+elif [[ $1 == "restoreall" ]]; then
+
+    echo "restoreall command received"
+
+    if [[ ! -v BACKUP_NAME ]]; then
+        echo 'BACKUP_NAME was not set'
+        exit 1
+    fi    
+    if [[ ! -v MYSQL_ROOT_PASSWORD ]]; then
+        echo 'MYSQL_ROOT_PASSWORD was not set'
+        exit 1
+    fi    
+
+    # to restore 
+    # mysql -h [hostname] -u [uname] -p[pass] [db_to_restore] < [backupfile.sql]
+
+    # MYSQL_USER
+    # $MYSQL_PASSWORD
+    BACKUP_FILE= "/var/lib/mysql/${BACKUP_NAME}.sql"
+    # $MYSQL_DATABASE
+    
+    echo "restoring from $BACKUP_FILE"
+
+    # restoring requires root privileges
+    mysql -h $MYSQL_SERVER -u "root" -p"$MYSQL_ROOT_PASSWORD" < "$BACKUP_FILE"
+
+    echo "Finished restoring from $BACKUP_FILE"    
 else
     echo "No command was passed in.  Use the args property in kubernetes to pass in a command (sleep, backup or restore)"
 fi
