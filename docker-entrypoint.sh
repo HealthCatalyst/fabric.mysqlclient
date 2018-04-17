@@ -1,12 +1,7 @@
 #!/bin/sh
 
-echo "starting docker-entrypoint.sh with argument: $1"
+echo "starting docker-entrypoint.sh version 2018.04.16.01 with argument: $1"
 
-if [[ $1 == "sleep" ]]; then
-    echo "sleeping forever"
-    tail -f /dev/null
-    exit 0
-fi
 
 if [[ ! -v MYSQL_SERVER ]]; then
     echo 'MYSQL_SERVER was not set'
@@ -52,6 +47,11 @@ elif [[ $1 == "backupall" ]]; then
     echo "backupall command received"
     if [[ ! -v BACKUP_NAME_PREFIX ]]; then
         echo 'BACKUP_NAME_PREFIX was not set'
+        exit 1
+    fi    
+
+    if [[ ! -v MYSQL_ROOT_PASSWORD ]]; then
+        echo 'MYSQL_ROOT_PASSWORD was not set'
         exit 1
     fi    
 
@@ -122,4 +122,15 @@ elif [[ $1 == "restoreall" ]]; then
     echo "Finished restoring from $BACKUP_FILE"    
 else
     echo "No command was passed in.  Use the args property in kubernetes to pass in a command (sleep, backup or restore)"
+    mysql -h $MYSQL_SERVER -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" $MYSQL_DATABASE -e "show tables;"
+#    mysql -h $MYSQL_SERVER -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" $MYSQL_DATABASE -e "select * from users;"
+    echo "You can connect to mysqlserver:"
+    echo "mysql -h $MYSQL_SERVER -u $MYSQL_USER -p $MYSQL_DATABASE"
+fi
+
+
+if [[ $1 == "sleep" ]]; then
+    echo "sleeping forever via tail -f /dev/null"
+    tail -f /dev/null
+    exit 0
 fi
