@@ -150,12 +150,23 @@ elif [[ $COMMAND_TO_RUN == "monitor" ]]; then
         SLEEPINTERVAL="5"
     fi
 
-    curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$ENVNAME Started monitoring MySql server $MYSQL_SERVER"'"}' "$SLACKURL"
+    if [[ -z "$INTERVALBETWEENMESSAGES" ]]; then
+        echo "INTERVALBETWEENMESSAGES is empty"
+        INTERVALBETWEENMESSAGES="5"
+    fi
+
+    curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$ENVNAME Started monitoring MySql server $MYSQL_SERVER every $SLEEPINTERVAL seconds"'"}' "$SLACKURL"
 
     declare -i numberOfTimesFailed
     declare -i sleepTimeInSeconds
 
+    declare -i timeLastSentSlackMessage
+    declare -i intervalBetweenSendingSlackMessages
+
+    timeLastSentSlackMessage=$SECONDS
+
     sleepTimeInSeconds=$SLEEPINTERVAL
+    intervalBetweenSendingSlackMessages=$INTERVALBETWEENMESSAGES
 
     hasFailed=false
 
@@ -166,18 +177,20 @@ elif [[ $COMMAND_TO_RUN == "monitor" ]]; then
             echo "$(date -Iseconds) MySql failed: $result"
             hasFailed=true
             numberOfTimesFailed=$numberOfTimesFailed+1
-            curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$ENVNAME MySql Failed($numberOfTimesFailed): $MYSQL_SERVER"'", "attachments":[{"text":"'"$result"'"}]}' "$SLACKURL"
-            echo ""
-
-            if [ $numberOfTimesFailed -gt 5 ]; then
-                sleepTimeInSeconds=3600 # every hour
+            timeSinceLastSentSlackMessage=$((SECONDS - timeLastSentSlackMessage))
+            echo "Time since last sent slack message: $timeSinceLastSentSlackMessage"
+            if [[ $timeSinceLastSentSlackMessage -gt $intervalBetweenSendingSlackMessages ]]; then
+                curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$ENVNAME MySql Failed($numberOfTimesFailed): $MYSQL_SERVER"'", "attachments":[{"text":"'"$result"'"}]}' "$SLACKURL"
+                echo ""
+                timeLastSentSlackMessage=$SECONDS
+            else
+                echo "Cannot send slack message since we sent one $timeSinceLastSentSlackMessage seconds ago and the minimum interval is  $intervalBetweenSendingSlackMessages"
             fi
         else
             echo "$(date -Iseconds) All is good now"
             numberOfTimesFailed=0
-            sleepTimeInSeconds=$SLEEPINTERVAL
             if [ "$hasFailed" = true ] ; then
-                curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$ENVNAME DNS is now working"'"}' "$SLACKURL"
+                curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$ENVNAME MySql is now working"'"}' "$SLACKURL"
                 hasFailed=false
             fi
         fi
