@@ -150,6 +150,8 @@ elif [[ $COMMAND_TO_RUN == "monitor" ]]; then
         SLEEPINTERVAL="5"
     fi
 
+    curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$ENVNAME Started monitoring MySql server $MYSQL_SERVER"'"}' "$SLACKURL"
+
     declare -i numberOfTimesFailed
     declare -i sleepTimeInSeconds
 
