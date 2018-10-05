@@ -172,7 +172,7 @@ elif [[ $COMMAND_TO_RUN == "monitor" ]]; then
 
     while true
     do
-        result=$(mysql -h $MYSQL_SERVER -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" $MYSQL_DATABASE -e "show tables;")
+        result=$(mysql -h $MYSQL_SERVER -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" $MYSQL_DATABASE -e "show tables;" 2>&1)
         if [ $? != 0 ]; then
             echo "$(date -Iseconds) MySql failed: $result"
             hasFailed=true
