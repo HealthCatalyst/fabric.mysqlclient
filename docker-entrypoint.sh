@@ -179,7 +179,7 @@ elif [[ $COMMAND_TO_RUN == "monitor" ]]; then
             numberOfTimesFailed=$numberOfTimesFailed+1
             timeSinceLastSentSlackMessage=$((SECONDS - timeLastSentSlackMessage))
             echo "Time since last sent slack message: $timeSinceLastSentSlackMessage"
-            if [[ $timeSinceLastSentSlackMessage -gt $intervalBetweenSendingSlackMessages ]]; then
+            if [[ $timeLastSentSlackMessage = 0 ]] || [[ $timeSinceLastSentSlackMessage -gt $intervalBetweenSendingSlackMessages ]]; then
                 curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$ENVNAME MySql Failed($numberOfTimesFailed): $MYSQL_SERVER"'", "attachments":[{"text":"'"$result"'"}]}' "$SLACKURL"
                 echo ""
                 timeLastSentSlackMessage=$SECONDS
